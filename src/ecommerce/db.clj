@@ -61,6 +61,14 @@
 
              ])
 
+(defn dissoc-db-id [entity]
+  (if (map? entity)
+    (dissoc entity :db/id)
+    entity))
+
+(defn datomic-to-entity [entities]
+  (walk/prewalk dissoc-db-id entities))
+
 (s/defn upsert-products!
   ([conn, products :- [model/Product]]
    (d/transact conn products))
@@ -98,14 +106,6 @@
 
 (s/defn add-categories! [conn, categories :- [model/Category]]
   (d/transact conn categories))
-
-(defn dissoc-db-id [entity]
-  (if (map? entity)
-    (dissoc entity :db/id)
-    entity))
-
-(defn datomic-to-entity [entities]
-  (walk/prewalk dissoc-db-id entities))
 
 (s/defn all-products :- [model/Product] [db]
   (datomic-to-entity
