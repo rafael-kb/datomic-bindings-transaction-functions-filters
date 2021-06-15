@@ -164,6 +164,25 @@
       product
       nil)))
 
+(s/defn all-products-in-categories :- [model/Product] [db, categories :- [s/Str]]
+  (datomic-to-entity
+    (d/q '[:find [(pull ?product [* {:product/category [*]}]) ...]
+           :in $ [?category-name ...]
+           :where
+           [?category :category/name ?category-name]
+           [?product :product/category ?category]]
+         db, categories)))
+
+(s/defn all-products-in-categories-and-digital [db, categories :- [s/Str], digital? :- s/Bool]
+  (datomic-to-entity
+    (d/q '[:find [(pull ?product [* {:product/category [*]}]) ...]
+           :in $ [?category-name ...] ?is-digital?
+           :where
+           [?category :category/name ?category-name]
+           [?product :product/category ?category]
+           [?product :product/digital ?is-digital?]]
+         db, categories, digital?)))
+
 
 
 

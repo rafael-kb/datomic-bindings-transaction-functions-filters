@@ -13,3 +13,12 @@
 (db/create-sample-data conn)
 
 (pprint (db/all-products (d/db conn)))
+
+(pprint (db/all-products-in-categories (d/db conn) ["Electronics" "Food"]))
+(pprint (db/all-products-in-categories (d/db conn) ["Electronics" "Sports"]))
+(pprint (db/all-products-in-categories (d/db conn) ["Sports"]))
+(pprint (db/all-products-in-categories (d/db conn) []))
+(pprint (db/all-products-in-categories (d/db conn) ["Food"]))
+
+(pprint (db/all-products-in-categories-and-digital (d/db conn) ["Electronics"] true))
+(pprint (db/all-products-in-categories-and-digital (d/db conn) ["Electronics"] false))
