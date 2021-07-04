@@ -144,6 +144,9 @@
     [(can-sell? ?product)
      (stock ?product ?stock)
      [(> ?stock 0)]]
+    [(product-in-category ?product ?category-name)
+     [?category :category/name ?category-name]
+     [?product :product/category ?category]]
     ])
 
 (s/defn all-salable-products :- [model/Product] [db]
@@ -167,21 +170,19 @@
 (s/defn all-products-in-categories :- [model/Product] [db, categories :- [s/Str]]
   (datomic-to-entity
     (d/q '[:find [(pull ?product [* {:product/category [*]}]) ...]
-           :in $ [?category-name ...]
+           :in $ % [?category-name ...]
            :where
-           [?category :category/name ?category-name]
-           [?product :product/category ?category]]
-         db, categories)))
+           (product-in-category ?product ?category-name)]
+         db, rules, categories)))
 
 (s/defn all-products-in-categories-and-digital [db, categories :- [s/Str], digital? :- s/Bool]
   (datomic-to-entity
     (d/q '[:find [(pull ?product [* {:product/category [*]}]) ...]
-           :in $ [?category-name ...] ?is-digital?
+           :in $ % [?category-name ...] ?is-digital?
            :where
-           [?category :category/name ?category-name]
-           [?product :product/category ?category]
+           (product-in-category ?product ?category-name)
            [?product :product/digital ?is-digital?]]
-         db, categories, digital?)))
+         db, rules, categories, digital?)))
 
 
 
