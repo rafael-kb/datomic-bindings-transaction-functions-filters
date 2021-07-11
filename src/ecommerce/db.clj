@@ -184,6 +184,9 @@
            [?product :product/digital ?is-digital?]]
          db, rules, categories, digital?)))
 
+(s/defn update-price! [conn, product-id :- java.util.UUID,  old, new]
+  (d/transact conn [[:db/cas [:product/id product-id] :product/price old new]]))
+
 
 
 
