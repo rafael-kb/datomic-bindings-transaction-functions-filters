@@ -3,7 +3,8 @@
   (:require [datomic.api :as d]
             [ecommerce.model :as model]
             [schema.core :as s]
-            [clojure.walk :as walk]))
+            [clojure.walk :as walk]
+            [clojure.set :as cset]))
 
 (def db-uri "datomic:dev://localhost:4334/ecommerce")
 
@@ -186,6 +187,14 @@
 
 (s/defn update-price! [conn, product-id :- java.util.UUID,  old, new]
   (d/transact conn [[:db/cas [:product/id product-id] :product/price old new]]))
+
+(s/defn update-product! [conn, old :- model/Product, to-update :- model/Product]
+  (let [product-id (:product/id old)
+        attributes (cset/intersection (set (keys old)) (set (keys to-update)))
+        attributes (disj attributes :product/id)
+        txs (map (fn [attr] [:db/cas [:product/id product-id] attr (get old attr) (get to-update attr)]) attributes)]
+    (d/transact conn txs))
+  )
 
 
 
