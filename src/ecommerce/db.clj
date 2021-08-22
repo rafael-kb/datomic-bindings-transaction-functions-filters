@@ -16,7 +16,6 @@
   (d/delete-database db-uri))
 
 (def schema [
-             ; Products
              {:db/ident       :product/name
               :db/valueType   :db.type/string
               :db/cardinality :db.cardinality/one
@@ -45,8 +44,21 @@
              {:db/ident       :product/digital
               :db/valueType   :db.type/boolean
               :db/cardinality :db.cardinality/one}
+             {:db/ident       :product/variant
+              :db/valueType   :db.type/ref
+              :db/cardinality :db.cardinality/many}
 
-             ; Categories
+             {:db/ident       :variant/id
+              :db/valueType   :db.type/uuid
+              :db/cardinality :db.cardinality/one
+              :db/unique      :db.unique/identity}
+             {:db/ident       :variant/name
+              :db/valueType   :db.type/string
+              :db/cardinality :db.cardinality/one}
+             {:db/ident       :variant/price
+              :db/valueType   :db.type/bigdec
+              :db/cardinality :db.cardinality/one}
+
              {:db/ident       :category/name
               :db/valueType   :db.type/string
               :db/cardinality :db.cardinality/one}
@@ -55,7 +67,6 @@
               :db/cardinality :db.cardinality/one
               :db/unique      :db.unique/identity}
 
-             ; Transactions
              {:db/ident       :tx-data/ip
               :db/valueType   :db.type/string
               :db/cardinality :db.cardinality/one}
@@ -122,7 +133,7 @@
 (defn create-sample-data [conn]
   (def electronics (model/new-category "Electronics"))
   (def sports (model/new-category "Sports"))
-  (pprint @(add-categories! conn [electronics, sports]))
+  (add-categories! conn [electronics, sports])
 
   (def computer (model/new-product (model/uuid) "New computer", "/new-computer", 2500.10M, 10))
   (def phone (model/new-product (model/uuid) "Expensive phone", "/phone", 888888.10M))
@@ -130,7 +141,7 @@
   (def budget-phone (model/new-product "Budget Phone", "/budget-phone", 0.1M))
   (def chess (model/new-product (model/uuid) "Chess board", "/chess-board", 30M, 5))
   (def game (assoc (model/new-product (model/uuid) "Online Game", "/online-game", 20M) :product/digital true))
-  (pprint @(upsert-products! conn [computer, phone, budget-phone, chess, game] "200.216.222.125"))
+  (upsert-products! conn [computer, phone, budget-phone, chess, game] "200.216.222.125")
 
   (assign-categories! conn [computer, phone, budget-phone, game] electronics)
   (assign-categories! conn [chess] sports))
@@ -185,7 +196,7 @@
            [?product :product/digital ?is-digital?]]
          db, rules, categories, digital?)))
 
-(s/defn update-price! [conn, product-id :- java.util.UUID,  old, new]
+(s/defn update-price! [conn, product-id :- java.util.UUID, old, new]
   (d/transact conn [[:db/cas [:product/id product-id] :product/price old new]]))
 
 (s/defn update-product! [conn, old :- model/Product, to-update :- model/Product]
@@ -195,6 +206,15 @@
         txs (map (fn [attr] [:db/cas [:product/id product-id] attr (get old attr) (get to-update attr)]) attributes)]
     (d/transact conn txs))
   )
+
+(s/defn add-variant! [conn, product-id :- java.util.UUID, variant :- s/Str, price :- BigDecimal]
+  (d/transact conn [{
+                     :db/id         "variant-temp-id"
+                     :variant/name  variant
+                     :variant/price price
+                     :variant/id    (model/uuid)}
+                    {:product/id      product-id
+                     :product/variant "variant-temp-id"}]))
 
 
 
