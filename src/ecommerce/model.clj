@@ -7,6 +7,11 @@
   {:category/id   java.util.UUID
    :category/name s/Str})
 
+(def Variant
+  {:variant/id   java.util.UUID
+   :variant/price BigDecimal
+   :variant/name s/Str})
+
 (def Product
   {:product/id                        java.util.UUID
    (s/optional-key :product/name)     s/Str
@@ -15,7 +20,8 @@
    (s/optional-key :product/keyword)  [s/Str]
    (s/optional-key :product/category) Category
    (s/optional-key :product/stock)    s/Int
-   (s/optional-key :product/digital)  s/Bool})
+   (s/optional-key :product/digital)  s/Bool
+   (s/optional-key :product/variant)  [Variant]})
 
 (s/defn new-product :- Product
   ([name slug price]

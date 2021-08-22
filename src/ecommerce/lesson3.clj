@@ -18,3 +18,9 @@
 
 (pprint @(db/add-variant! conn (:product/id prod) "256 SSD" 3000M))
 (pprint @(db/add-variant! conn (:product/id prod) "256 SSD i9 Intel Processor" 6000M))
+
+(pprint (d/q '[:find (pull ?product [*])
+               :where [?product :product/name]]
+             (d/db conn)))
+
+(pprint (db/all-products (d/db conn)))

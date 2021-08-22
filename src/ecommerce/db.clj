@@ -46,6 +46,7 @@
               :db/cardinality :db.cardinality/one}
              {:db/ident       :product/variant
               :db/valueType   :db.type/ref
+              :db/isComponent true
               :db/cardinality :db.cardinality/many}
 
              {:db/ident       :variant/id
