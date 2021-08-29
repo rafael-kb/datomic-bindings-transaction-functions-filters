@@ -24,3 +24,11 @@
              (d/db conn)))
 
 (pprint (db/all-products (d/db conn)))
+
+(pprint (db/count-products (d/db conn)))
+
+(pprint @(db/remove-product! conn (:product/id prod)))
+
+(pprint (d/q '[:find ?name
+               :where [?_ :variant/name ?name]]
+             (d/db conn)))

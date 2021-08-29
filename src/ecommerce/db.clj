@@ -217,6 +217,14 @@
                     {:product/id      product-id
                      :product/variant "variant-temp-id"}]))
 
+(defn count-products [db]
+  (d/q '[:find [(count ?product)]
+         :where [?product :product/name]]
+       db))
+
+(s/defn remove-product!
+  [conn product-id :- java.util.UUID]
+  (d/transact conn [[:db/retractEntity  [:product/id product-id]]]))
 
 
 
