@@ -230,20 +230,23 @@
   [conn product-id :- java.util.UUID]
   (d/transact conn [[:db/retractEntity [:product/id product-id]]]))
 
-(s/defn views [db product-id :- java.util.UUID]
-  (or (d/q '[:find ?views .
-             :in $ id
-             :where [?p :product/id ?id]
-             [?p :product/views ?views]]
-           db product-id) 0))
+; danger is not atomic
+;(s/defn views [db product-id :- java.util.UUID]
+;  (or (d/q '[:find ?views .
+;             :in $ id
+;             :where [?p :product/id ?id]
+;             [?p :product/views ?views]]
+;           db product-id) 0))
+;
+;(s/defn views! [conn product-id :- java.util.UUID]
+;  (let [current-views (views (d/db conn) product-id)
+;        new-value (inc current-views)]
+;    (d/transact conn [{:product/id    product-id
+;                       :product/views new-value}]))
+;  )
 
 (s/defn views! [conn product-id :- java.util.UUID]
-  (let [current-views (views (d/db conn) product-id)
-        new-value (inc current-views)]
-    (d/transact conn [{:product/id    product-id
-                       :product/views new-value}]))
-  )
-
+  (d/transact conn [[:inc-views product-id]]))
 
 
 
